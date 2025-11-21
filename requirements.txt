@@ -1,0 +1,8 @@
+steamlit
+scikit-learn
+pandas
+numpy
+Sastrawi
+matplotlib
+seaborn
+wordcloud
