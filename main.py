@@ -22,6 +22,7 @@ def load_model_objects():
     except:
         return None, None, None, None, None
 
+
 model_bnb, model_svm, model_ensemble, vectorizer, tools = load_model_objects()
 
 
@@ -34,7 +35,7 @@ def preprocess_text(text, stopword_remover, stemmer):
     return text
 
 
-# Confidence label
+# Confidence badge
 def get_confidence_badge(prob):
     if prob > 80:
         return "🟢 Tinggi", "success"
@@ -87,7 +88,7 @@ else:
         else:
             with st.spinner("Menganalisis..."):
                 try:
-                    stopword_remover = tools["stopword"]
+                    stopword_remover = tools.get("stopword", tools.get("stopwords"))
                     stemmer = tools["stemmer"]
 
                     processed = preprocess_text(input_text, stopword_remover, stemmer)
@@ -125,7 +126,7 @@ else:
                     # Bandingkan model
                     if show_comparison:
                         st.subheader("🔎 Perbandingan Prediksi Model")
-                        st.write(f"**BernoulliNB:** {pred_bnb} ({prob_bnb[pred_bnb == 'positive'] if pred_bnb == 'positive' else prob_bnb[0]*100:.1f}%)")
+                        st.write(f"**BernoulliNB:** {pred_bnb} ({prob_bnb[1]*100:.1f}% Positif)")
                         st.write(f"**Linear SVM:** {pred_svm}")
                         st.write(f"**Ensemble:** {pred_ensemble}")
 
