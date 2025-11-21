@@ -24,6 +24,7 @@ def load_model_objects():
 
 model_bnb, model_svm, model_ensemble, vectorizer, tools = load_model_objects()
 
+
 # Preprocessing teks
 def preprocess_text(text, stopword_remover, stemmer):
     text = re.sub('[^A-Za-z]+', ' ', text).lower().strip()
@@ -31,6 +32,7 @@ def preprocess_text(text, stopword_remover, stemmer):
     text = stopword_remover.remove(text)
     text = stemmer.stem(text)
     return text
+
 
 # Confidence label
 def get_confidence_badge(prob):
@@ -41,14 +43,15 @@ def get_confidence_badge(prob):
     else:
         return "🔴 Rendah", "error"
 
-# UI Utama
+
+# UI
 st.title("🎬 Analisis Sentimen Film")
 st.markdown("### Ensemble Model (BernoulliNB + SVM)")
 
 models_loaded = all([model_bnb, model_svm, model_ensemble, vectorizer, tools])
 
 if not models_loaded:
-    st.error("⚠ File model tidak ditemukan.")
+    st.error("⚠ File model tidak ditemukan. Pastikan semua file .pkl sudah diunggah.")
 else:
     st.subheader("✍ Masukkan Ulasan Film")
 
@@ -82,10 +85,11 @@ else:
         if input_text.strip() == "":
             st.warning("⚠ Masukkan teks terlebih dahulu.")
         else:
-            with st.spinner('Menganalisis...'):
+            with st.spinner("Menganalisis..."):
                 try:
-                    stopword_remover = tools['stopword']
-                    stemmer = tools['stemmer']
+                    stopword_remover = tools["stopword"]
+                    stemmer = tools["stemmer"]
+
                     processed = preprocess_text(input_text, stopword_remover, stemmer)
                     vec = vectorizer.transform([processed])
 
@@ -97,7 +101,8 @@ else:
                     prob_svm = model_svm.predict_proba(vec)[0]
                     prob_ensemble = model_ensemble.predict_proba(vec)[0]
 
-                    st.subheader("🎯 Hasil Analisis (Ensemble)")
+                    # Hasil akhir (ensemble)
+                    st.subheader("🎯 Hasil Analisis (Ensemble Voting)")
 
                     max_prob = max(prob_ensemble) * 100
                     conf_text, conf_type = get_confidence_badge(max_prob)
@@ -111,6 +116,23 @@ else:
 
                     # Probabilitas
                     st.write("📊 Probabilitas:")
-                    col1, col2 = st.columns(2)
-                    with col1:
+                    colA, colB = st.columns(2)
+                    with colA:
                         st.metric("Negatif", f"{prob_ensemble[0]*100:.1f}%")
+                    with colB:
+                        st.metric("Positif", f"{prob_ensemble[1]*100:.1f}%")
+
+                    # Bandingkan model
+                    if show_comparison:
+                        st.subheader("🔎 Perbandingan Prediksi Model")
+                        st.write(f"**BernoulliNB:** {pred_bnb} ({prob_bnb[pred_bnb == 'positive'] if pred_bnb == 'positive' else prob_bnb[0]*100:.1f}%)")
+                        st.write(f"**Linear SVM:** {pred_svm}")
+                        st.write(f"**Ensemble:** {pred_ensemble}")
+
+                    # Detail preprocessing
+                    if show_details:
+                        st.subheader("🧹 Detail Hasil Preprocessing")
+                        st.code(processed)
+
+                except Exception as e:
+                    st.error(f"❌ Terjadi error saat analisis: {e}")
